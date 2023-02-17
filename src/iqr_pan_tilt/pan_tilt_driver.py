@@ -1,7 +1,7 @@
 from time import sleep
 from dataclasses import dataclass
 from threading import Thread, Lock
-from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster, UINT16, UINT8
+from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster
 
 
 @dataclass
@@ -35,17 +35,21 @@ class PanTiltDriver:
         return self
 
     def __exit__(self, type, value, traceback):
-        self.set_pose(0, 0, 10)
+        if self.end_identity:
+            self.set_pose(0, 0, 10)
         self._stop()
 
-    def __init__(self, port_name: str = "/dev/pan_tilt") -> None:
+    def __init__(self, port_name: str = "/dev/pan_tilt", start_identity=True, end_identity=True) -> None:
         self._id = 1
         self._master = ModbusRTUMaster(port_name, 115200)
         self._read_flag = True
         self._lock = Lock()
         self._st = PanTiltStatus()
         sleep(0.5)
-        self.set_pose(0.02, 0.0, 10)
+        if start_identity:
+            self.set_pose(0.0, 0.0, 10)
+            sleep(1)
+        self.end_identity = end_identity
 
     def start(self):
         self.td = Thread(target=self._run)

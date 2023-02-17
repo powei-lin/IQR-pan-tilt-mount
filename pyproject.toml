@@ -63,7 +63,7 @@ exclude_lines = [
 ]
 
 [project.scripts]
-calibration_tools_convert_raw = "calibration_tools.app.convert_raw:main"
+iqr_pan_tilt_tool = "iqr_pan_tilt.tool:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/iqr_pan_tilt"]
