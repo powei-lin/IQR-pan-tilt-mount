@@ -20,7 +20,7 @@ class ModbusRTUMaster:
         print("closing")
         self._com.close()
 
-    def SetMultipleRegisters(self, slave_id: int, address: int, data):  # 0x10 = 16
+    def set_multiple_registers(self, slave_id: int, address: int, data):  # 0x10 = 16
         
         if not self._com.is_open:
             print("serial not open!!")
@@ -37,18 +37,14 @@ class ModbusRTUMaster:
             send_buffer.append(((length & 0xff00) >> 8) % UINT8)
             send_buffer.append(((length & 0x00ff)) % UINT8)
             send_buffer.append(((length & 0x00ff) * 2) % UINT8)
-            print(bytearray(send_buffer), 'first')
-            print(send_buffer)
             buffer_index = 6
-            write_b = self._com.write(bytearray(send_buffer))
-            print(write_b)
+            self._com.write(bytearray(send_buffer))
             for d in data:
                 send_buffer.append(((d & 0xff00) >> 8) % UINT8)
                 send_buffer.append(((d & 0x00ff)) % UINT8)
                 buffer_index += 2
 
             crc = ModbusRTUMaster._ModBusCRC(send_buffer)
-            print(crc)
             c0 = ((crc & 0x00ff)) % UINT8
             c1 = ((crc & 0xff00) >> 8) % UINT8
             send_buffer.append(c0)

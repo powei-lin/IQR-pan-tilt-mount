@@ -34,7 +34,7 @@ class PanTiltDriver:
         self.start()
         return self
     def __exit__(self, type, value, traceback):
-        self.setPose(0, 0, 10)
+        self.set_pose(0, 0, 10)
         self._stop()
 
     def __init__(self, port_name :str = "/dev/pan_tilt") -> None:
@@ -44,7 +44,7 @@ class PanTiltDriver:
         self._lock = Lock()
         self._st = PanTiltStatus()
         sleep(0.5)
-        self.setPose(0.02, 0.0, 10)
+        self.set_pose(0.02, 0.0, 10)
     
     def start(self):
         self.td = Thread(target=self._run)
@@ -55,13 +55,14 @@ class PanTiltDriver:
 
     def getStatus(self) -> PanTiltStatus:
         return self._st
-    def getPose(self) -> tuple:
+
+    def get_pose(self) -> tuple:
         with self._lock:
             yaw = self._st.yaw_now
             pitch = self._st.pitch_now
         return yaw, pitch
 
-    def setPose(self, yaw:float, pitch:float, speed:int):
+    def set_pose(self, yaw:float, pitch:float, speed:int):
         if yaw < -60.0 or yaw > 60.0:
             print("yaw !!")
             return
@@ -74,7 +75,7 @@ class PanTiltDriver:
     
         with self._lock:
             sendBuf = [speed, int(yaw*100.0), int(pitch*100)]
-            self._master.SetMultipleRegisters(self._id, 0x0006, sendBuf)
+            self._master.set_multiple_registers(self._id, 0x0006, sendBuf)
 
     def _run(self):
         while (self._read_flag):

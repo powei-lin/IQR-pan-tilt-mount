@@ -1,1 +1,1 @@
-# IQR-pan-tilt-mount
+# IQR-pan-tilt-python
