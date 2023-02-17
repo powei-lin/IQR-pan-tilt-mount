@@ -1,7 +1,7 @@
 from time import sleep
 from dataclasses import dataclass
 from threading import Thread, Lock
-from modbus_rtu_master import ModbusRTUMaster, UINT16, UINT8
+from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster, UINT16, UINT8
 
 
 @dataclass
@@ -33,11 +33,12 @@ class PanTiltDriver:
     def __enter__(self):
         self.start()
         return self
+
     def __exit__(self, type, value, traceback):
         self.set_pose(0, 0, 10)
         self._stop()
 
-    def __init__(self, port_name :str = "/dev/pan_tilt") -> None:
+    def __init__(self, port_name: str = "/dev/pan_tilt") -> None:
         self._id = 1
         self._master = ModbusRTUMaster(port_name, 115200)
         self._read_flag = True
@@ -45,7 +46,7 @@ class PanTiltDriver:
         self._st = PanTiltStatus()
         sleep(0.5)
         self.set_pose(0.02, 0.0, 10)
-    
+
     def start(self):
         self.td = Thread(target=self._run)
         self.td.start()
@@ -62,7 +63,7 @@ class PanTiltDriver:
             pitch = self._st.pitch_now
         return yaw, pitch
 
-    def set_pose(self, yaw:float, pitch:float, speed:int):
+    def set_pose(self, yaw: float, pitch: float, speed: int):
         if yaw < -60.0 or yaw > 60.0:
             print("yaw !!")
             return
@@ -72,7 +73,7 @@ class PanTiltDriver:
         if speed < 1 or speed > 30:
             print("speed !!!")
             return
-    
+
         with self._lock:
             sendBuf = [speed, int(yaw*100.0), int(pitch*100)]
             self._master.set_multiple_registers(self._id, 0x0006, sendBuf)
@@ -80,7 +81,8 @@ class PanTiltDriver:
     def _run(self):
         while (self._read_flag):
             with self._lock:
-                rcvdBuf = self._master.GetMultipleRegisters(self._id, 0x0000, 20)
+                rcvdBuf = self._master.GetMultipleRegisters(
+                    self._id, 0x0000, 20)
                 if (rcvdBuf):
                     self._st.id = rcvdBuf[0]
                     self._st.serial_num = f"SN{int(rcvdBuf[1])}"
@@ -95,14 +97,15 @@ class PanTiltDriver:
                     self._st.driver_ec = rcvdBuf[10]
                     self._st.encoder_ec = rcvdBuf[11]
                     self._st.yaw_now = int(rcvdBuf[12]) / 100.0
-                    self._st.pitch_now = int(rcvdBuf[13]) /100.0
+                    self._st.pitch_now = int(rcvdBuf[13]) / 100.0
                     self._st.yaw_temp = int(rcvdBuf[14]) / 10.0
-                    self._st.pitch_temp = int(rcvdBuf[15]) /10.0
+                    self._st.pitch_temp = int(rcvdBuf[15]) / 10.0
                     self._st.yaw_raw = int(rcvdBuf[16])
                     self._st.pitch_raw = int(rcvdBuf[17])
                     self._st.loop_ec = rcvdBuf[18]
                     self._st.loop_time = rcvdBuf[19]
             sleep(0.1)
+
     def _stop(self):
         if self._read_flag:
             with self._lock:

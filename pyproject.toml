@@ -1,0 +1,84 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "IQR-pan-tilt-python"
+description = ''
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Powei Lin", email = "poweilin1994@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "pyserial"
+]
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://github.com/unknown/calibration-tools#readme"
+Issues = "https://github.com/unknown/calibration-tools/issues"
+Source = "https://github.com/unknown/calibration-tools"
+
+[tool.hatch.version]
+path = "src/__version__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "pytest",
+  "pytest-cov",
+]
+[tool.hatch.envs.default.scripts]
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=calibration_tools --cov=tests {args}"
+no-cov = "cov --no-cov {args}"
+
+[[tool.hatch.envs.test.matrix]]
+python = ["37", "38", "39", "310", "311"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = [
+  "src/__version__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[project.scripts]
+calibration_tools_convert_raw = "calibration_tools.app.convert_raw:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/iqr_pan_tilt"]
+
+[tool.hatch.envs.style]
+detached = true
+dependencies = [
+  "flake8",
+  "flake8-docstrings"
+]
+
+[tool.flake8]
+max-line-length = 120
+
+[tool.hatch.envs.style.scripts]
+check = [
+  "flake8 ."
+]

@@ -1,5 +1,5 @@
 from time import sleep
-from pan_tilt_driver import PanTiltDriver
+from iqr_pan_tilt import PanTiltDriver
 
 with PanTiltDriver() as ptd:
     yaw, pitch = ptd.get_pose()
