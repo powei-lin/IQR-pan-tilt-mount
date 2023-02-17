@@ -44,7 +44,7 @@ class ModbusRTUMaster:
                 send_buffer.append(((d & 0x00ff)) % UINT8)
                 buffer_index += 2
 
-            crc = ModbusRTUMaster._ModBusCRC(send_buffer)
+            crc = ModbusRTUMaster._mod_bus_crc(send_buffer)
             c0 = ((crc & 0x00ff)) % UINT8
             c1 = ((crc & 0xff00) >> 8) % UINT8
             send_buffer.append(c0)
@@ -91,7 +91,7 @@ class ModbusRTUMaster:
                 self._com.flush()
                 return 0
 
-            rec_crc = ModbusRTUMaster._ModBusCRC(
+            rec_crc = ModbusRTUMaster._mod_bus_crc(
                 receive_buffer[:receive_length - 2])
             rec_crc_ = ((receive_buffer[receive_length - 1] << 8)
                         | (receive_buffer[receive_length - 2])) % UINT16
@@ -104,7 +104,7 @@ class ModbusRTUMaster:
             self._com.flush()
         return 1
 
-    def GetMultipleRegisters(self, slave_id: int, address: int, length: int):  # 0x03 = 03
+    def get_multiple_registers(self, slave_id: int, address: int, length: int):  # 0x03 = 03
         if not self._com.is_open:
             print("serial not open!!")
             return []
@@ -120,7 +120,7 @@ class ModbusRTUMaster:
             send_buffer[3] = ((address & 0x00ff)) % UINT8
             send_buffer[4] = ((length & 0xff00) >> 8) % UINT8
             send_buffer[5] = ((length & 0x00ff)) % UINT8
-            crc = ModbusRTUMaster._ModBusCRC(send_buffer[:6])
+            crc = ModbusRTUMaster._mod_bus_crc(send_buffer[:6])
             send_buffer[6] = ((crc & 0x00ff)) % UINT8
             send_buffer[7] = ((crc & 0xff00) >> 8) % UINT8
 
@@ -157,7 +157,7 @@ class ModbusRTUMaster:
                 self._com.flush()
                 return []
 
-            rec_crc = ModbusRTUMaster._ModBusCRC(
+            rec_crc = ModbusRTUMaster._mod_bus_crc(
                 receive_buffer[:receive_length - 2])
             rec_crc_ = ((receive_buffer[receive_length - 1] << 8)
                         | (receive_buffer[receive_length - 2])) % UINT16
@@ -176,7 +176,7 @@ class ModbusRTUMaster:
         return data
 
     @staticmethod
-    def _ModBusCRC(data):
+    def _mod_bus_crc(data):
         crc = 0xFFFF
 
         for d in data:

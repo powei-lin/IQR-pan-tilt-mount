@@ -58,7 +58,7 @@ class PanTiltDriver:
     def __del__(self):
         self._stop()
 
-    def getStatus(self) -> PanTiltStatus:
+    def get_status(self) -> PanTiltStatus:
         return self._st
 
     def get_pose(self) -> tuple:
