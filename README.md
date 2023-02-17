@@ -18,3 +18,4 @@ pip install .
 iqr_pan_tilt_tool 40 50 30
 
 ```
+![](data/sample.mov)
