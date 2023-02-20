@@ -87,10 +87,7 @@ class PanTiltDriver:
             if (abs(y-yaw) < 0.1 and abs(p - pitch) < 0.1):
                 break
             else:
-                # print(f"{yaw}, {y}")
-                # print(f"{pitch}, {p}")
-                # print()
-                sleep(0.1)
+                sleep(0.01)
 
     def _run(self):
         while (self._read_flag):
@@ -102,23 +99,24 @@ class PanTiltDriver:
                     self._st.serial_num = f"SN{int(rcvdBuf[1])}"
                     self._st.hw_version = f"v{int((rcvdBuf[2] & 0xff00) >> 8)}.{int(rcvdBuf[2] & 0x00ff)}"
                     self._st.bd_version = f"v{int((rcvdBuf[3] & 0xff00) >> 8)}.{int(rcvdBuf[3] & 0x00ff)}"
-                    self._st.sw_version = f"v{int((rcvdBuf[4] & 0xf000) >> 12)}.{int((rcvdBuf[4] & 0x0f00) >> 8)}.{int(rcvdBuf[4] & 0x00ff)}"
+                    self._st.sw_version = (f"v{int((rcvdBuf[4] & 0xf000) >> 12)}."
+                                           f"{int((rcvdBuf[4] & 0x0f00) >> 8)}.{int(rcvdBuf[4] & 0x00ff)}")
                     self._st.set_zero = rcvdBuf[5]
                     self._st.speed = rcvdBuf[6]
-                    self._st.yaw_goal = int(rcvdBuf[7]) / 100.0
-                    self._st.pitch_goal = int(rcvdBuf[8]) / 100.0
+                    self._st.yaw_goal = uint16_to_int16(rcvdBuf[7]) / 100.0
+                    self._st.pitch_goal = uint16_to_int16(rcvdBuf[8]) / 100.0
                     self._st.reserved = rcvdBuf[9]
                     self._st.driver_ec = rcvdBuf[10]
                     self._st.encoder_ec = rcvdBuf[11]
                     self._st.yaw_now = uint16_to_int16(rcvdBuf[12]) / 100.0
                     self._st.pitch_now = uint16_to_int16(rcvdBuf[13]) / 100.0
-                    self._st.yaw_temp = int(rcvdBuf[14]) / 10.0
-                    self._st.pitch_temp = int(rcvdBuf[15]) / 10.0
-                    self._st.yaw_raw = int(rcvdBuf[16])
-                    self._st.pitch_raw = int(rcvdBuf[17])
+                    self._st.yaw_temp = uint16_to_int16(rcvdBuf[14]) / 10.0
+                    self._st.pitch_temp = uint16_to_int16(rcvdBuf[15]) / 10.0
+                    self._st.yaw_raw = uint16_to_int16(rcvdBuf[16])
+                    self._st.pitch_raw = uint16_to_int16(rcvdBuf[17])
                     self._st.loop_ec = rcvdBuf[18]
                     self._st.loop_time = rcvdBuf[19]
-            sleep(0.1)
+            sleep(0.01)
 
     def _stop(self):
         if self._read_flag:
