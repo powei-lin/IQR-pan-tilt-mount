@@ -8,12 +8,19 @@ UINT8 = 2**8
 UINT16 = 2**16
 
 
+def uint16_to_int16(i):
+    if i < UINT16//2:
+        return i
+    else:
+        return i - UINT16
+
+
 class ModbusRTUMaster:
     def __init__(self, port_name: str, baud_rate: int) -> None:
         self._lock = Lock()
         self._com = Serial(port=port_name, baudrate=baud_rate, timeout=0.5)
         if self._com.is_open:
-            print(f"open serial port: {port_name} successful!!")
+            print(f"Open serial port: {port_name} successful")
         sleep(0.5)
 
     def __del__(self):

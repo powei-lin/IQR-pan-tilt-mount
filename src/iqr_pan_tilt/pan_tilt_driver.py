@@ -1,7 +1,7 @@
 from time import sleep
 from dataclasses import dataclass
 from threading import Thread, Lock
-from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster
+from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster, uint16_to_int16
 
 
 @dataclass
@@ -67,7 +67,7 @@ class PanTiltDriver:
             pitch = self._st.pitch_now
         return yaw, pitch
 
-    def set_pose(self, yaw: float, pitch: float, speed: int):
+    def set_pose(self, yaw: float, pitch: float, speed: int, block=False):
         if yaw < -60.0 or yaw > 60.0:
             print("yaw !!")
             return
@@ -82,10 +82,20 @@ class PanTiltDriver:
             sendBuf = [speed, int(yaw*100.0), int(pitch*100)]
             self._master.set_multiple_registers(self._id, 0x0006, sendBuf)
 
+        while (block):
+            y, p = self.get_pose()
+            if (abs(y-yaw) < 0.1 and abs(p - pitch) < 0.1):
+                break
+            else:
+                # print(f"{yaw}, {y}")
+                # print(f"{pitch}, {p}")
+                # print()
+                sleep(0.1)
+
     def _run(self):
         while (self._read_flag):
             with self._lock:
-                rcvdBuf = self._master.GetMultipleRegisters(
+                rcvdBuf = self._master.get_multiple_registers(
                     self._id, 0x0000, 20)
                 if (rcvdBuf):
                     self._st.id = rcvdBuf[0]
@@ -100,8 +110,8 @@ class PanTiltDriver:
                     self._st.reserved = rcvdBuf[9]
                     self._st.driver_ec = rcvdBuf[10]
                     self._st.encoder_ec = rcvdBuf[11]
-                    self._st.yaw_now = int(rcvdBuf[12]) / 100.0
-                    self._st.pitch_now = int(rcvdBuf[13]) / 100.0
+                    self._st.yaw_now = uint16_to_int16(rcvdBuf[12]) / 100.0
+                    self._st.pitch_now = uint16_to_int16(rcvdBuf[13]) / 100.0
                     self._st.yaw_temp = int(rcvdBuf[14]) / 10.0
                     self._st.pitch_temp = int(rcvdBuf[15]) / 10.0
                     self._st.yaw_raw = int(rcvdBuf[16])
