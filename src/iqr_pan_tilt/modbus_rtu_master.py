@@ -45,7 +45,6 @@ class ModbusRTUMaster:
             send_buffer.append(((length & 0x00ff)) % UINT8)
             send_buffer.append(((length & 0x00ff) * 2) % UINT8)
             buffer_index = 6
-            self._com.write(bytearray(send_buffer))
             for d in data:
                 send_buffer.append(((d & 0xff00) >> 8) % UINT8)
                 send_buffer.append(((d & 0x00ff)) % UINT8)
@@ -66,9 +65,13 @@ class ModbusRTUMaster:
 
             sleep(REBACK_SLEEP_MS/1000)
 
-            write_length = self._com.write(bytearray(send_buffer))
             receive_length = 8
-            receive_buffer = self._com.read(receive_length)
+            for i in range(3):
+                receive_buffer = self._com.read(receive_length)
+                if len(receive_buffer) > 0:
+                    break
+                print(f"try {i}")
+                write_length = self._com.write(bytearray(send_buffer))
 
             if (receive_length != len(receive_buffer)):
                 print("Failed to read message!!set")

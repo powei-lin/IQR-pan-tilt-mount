@@ -72,14 +72,14 @@ class PanTiltDriver:
             print("yaw !!")
             return
         if pitch < -60.0 or pitch > 60.0:
-            print("yaw !!")
+            print("pitch !!")
             return
         if speed < 1 or speed > 30:
             print("speed !!!")
             return
 
         with self._lock:
-            sendBuf = [speed, int(yaw*100.0), int(pitch*100)]
+            sendBuf = [speed, round(yaw*100.0), round(pitch*100)]
             self._master.set_multiple_registers(self._id, 0x0006, sendBuf)
 
         while (block):
