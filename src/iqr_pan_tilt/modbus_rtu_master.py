@@ -1,18 +1,9 @@
 from serial import Serial
 from time import sleep
 from threading import Lock
-
+from ctypes import c_uint8, c_uint16
 
 REBACK_SLEEP_MS = 5
-UINT8 = 2**8
-UINT16 = 2**16
-
-
-def uint16_to_int16(i):
-    if i < UINT16//2:
-        return i
-    else:
-        return i - UINT16
 
 
 class ModbusRTUMaster:
@@ -39,20 +30,20 @@ class ModbusRTUMaster:
             send_buffer = []
             send_buffer.append(slave_id)
             send_buffer.append(function_num)
-            send_buffer.append(((address & 0xff00) >> 8) % UINT8)
-            send_buffer.append(((address & 0x00ff)) % UINT8)
-            send_buffer.append(((length & 0xff00) >> 8) % UINT8)
-            send_buffer.append(((length & 0x00ff)) % UINT8)
-            send_buffer.append(((length & 0x00ff) * 2) % UINT8)
+            send_buffer.append(c_uint8((address & 0xff00) >> 8).value)
+            send_buffer.append(c_uint8((address & 0x00ff)).value)
+            send_buffer.append(c_uint8((length & 0xff00) >> 8).value)
+            send_buffer.append(c_uint8((length & 0x00ff)).value)
+            send_buffer.append(c_uint8((length & 0x00ff) * 2).value)
             buffer_index = 6
             for d in data:
-                send_buffer.append(((d & 0xff00) >> 8) % UINT8)
-                send_buffer.append(((d & 0x00ff)) % UINT8)
+                send_buffer.append(c_uint8((d & 0xff00) >> 8).value)
+                send_buffer.append(c_uint8((d & 0x00ff)).value)
                 buffer_index += 2
 
             crc = ModbusRTUMaster._mod_bus_crc(send_buffer)
-            c0 = ((crc & 0x00ff)) % UINT8
-            c1 = ((crc & 0xff00) >> 8) % UINT8
+            c0 = c_uint8((crc & 0x00ff)).value
+            c1 = c_uint8((crc & 0xff00) >> 8).value
             send_buffer.append(c0)
             send_buffer.append(c1)
 
@@ -86,10 +77,10 @@ class ModbusRTUMaster:
                 self._com.flush()
                 return 0
 
-            temp_address = (
-                (receive_buffer[2] << 8) | receive_buffer[3]) % UINT16
-            temp_length = ((receive_buffer[4] << 8)
-                           | receive_buffer[5]) % UINT16
+            temp_address = c_uint16(
+                (receive_buffer[2] << 8) | receive_buffer[3]).value
+            temp_length = c_uint16((receive_buffer[4] << 8)
+                                   | receive_buffer[5]).value
 
             if (temp_address != address):
                 print("Message start address error!!")
@@ -103,8 +94,8 @@ class ModbusRTUMaster:
 
             rec_crc = ModbusRTUMaster._mod_bus_crc(
                 receive_buffer[:receive_length - 2])
-            rec_crc_ = ((receive_buffer[receive_length - 1] << 8)
-                        | (receive_buffer[receive_length - 2])) % UINT16
+            rec_crc_ = c_uint16((receive_buffer[receive_length - 1] << 8)
+                                | (receive_buffer[receive_length - 2])).value
 
             if (rec_crc != rec_crc_):
                 print("Message crc check error!!")
@@ -126,13 +117,13 @@ class ModbusRTUMaster:
 
             send_buffer[0] = slave_id
             send_buffer[1] = function_num
-            send_buffer[2] = ((address & 0xff00) >> 8) % UINT8
-            send_buffer[3] = ((address & 0x00ff)) % UINT8
-            send_buffer[4] = ((length & 0xff00) >> 8) % UINT8
-            send_buffer[5] = ((length & 0x00ff)) % UINT8
+            send_buffer[2] = c_uint8((address & 0xff00) >> 8).value
+            send_buffer[3] = c_uint8((address & 0x00ff)).value
+            send_buffer[4] = c_uint8((length & 0xff00) >> 8).value
+            send_buffer[5] = c_uint8((length & 0x00ff)).value
             crc = ModbusRTUMaster._mod_bus_crc(send_buffer[:6])
-            send_buffer[6] = ((crc & 0x00ff)) % UINT8
-            send_buffer[7] = ((crc & 0xff00) >> 8) % UINT8
+            send_buffer[6] = c_uint8((crc & 0x00ff)).value
+            send_buffer[7] = c_uint8((crc & 0xff00) >> 8).value
 
             write_length = self._com.write(send_buffer)
 
@@ -169,8 +160,8 @@ class ModbusRTUMaster:
 
             rec_crc = ModbusRTUMaster._mod_bus_crc(
                 receive_buffer[:receive_length - 2])
-            rec_crc_ = ((receive_buffer[receive_length - 1] << 8)
-                        | (receive_buffer[receive_length - 2])) % UINT16
+            rec_crc_ = c_uint16((receive_buffer[receive_length - 1] << 8)
+                                | (receive_buffer[receive_length - 2])).value
 
             if (rec_crc != rec_crc_):
                 print("Message crc check error!!")
@@ -180,7 +171,7 @@ class ModbusRTUMaster:
             data = []
             for i in range(length):
                 data.append(
-                    ((receive_buffer[3 + i * 2] << 8) | (receive_buffer[4 + i * 2])) % UINT16)
+                    c_uint16((receive_buffer[3 + i * 2] << 8) | (receive_buffer[4 + i * 2])).value)
 
         self._com.flush()
         return data

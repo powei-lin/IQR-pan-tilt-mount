@@ -1,7 +1,8 @@
 from time import sleep
 from dataclasses import dataclass
 from threading import Thread, Lock
-from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster, uint16_to_int16
+from iqr_pan_tilt.modbus_rtu_master import ModbusRTUMaster
+from ctypes import c_int16
 
 
 @dataclass
@@ -103,17 +104,17 @@ class PanTiltDriver:
                                            f"{int((rcvdBuf[4] & 0x0f00) >> 8)}.{int(rcvdBuf[4] & 0x00ff)}")
                     self._st.set_zero = rcvdBuf[5]
                     self._st.speed = rcvdBuf[6]
-                    self._st.yaw_goal = uint16_to_int16(rcvdBuf[7]) / 100.0
-                    self._st.pitch_goal = uint16_to_int16(rcvdBuf[8]) / 100.0
+                    self._st.yaw_goal = c_int16(rcvdBuf[7]).value / 100.0
+                    self._st.pitch_goal = c_int16(rcvdBuf[8]).value / 100.0
                     self._st.reserved = rcvdBuf[9]
                     self._st.driver_ec = rcvdBuf[10]
                     self._st.encoder_ec = rcvdBuf[11]
-                    self._st.yaw_now = uint16_to_int16(rcvdBuf[12]) / 100.0
-                    self._st.pitch_now = uint16_to_int16(rcvdBuf[13]) / 100.0
-                    self._st.yaw_temp = uint16_to_int16(rcvdBuf[14]) / 10.0
-                    self._st.pitch_temp = uint16_to_int16(rcvdBuf[15]) / 10.0
-                    self._st.yaw_raw = uint16_to_int16(rcvdBuf[16])
-                    self._st.pitch_raw = uint16_to_int16(rcvdBuf[17])
+                    self._st.yaw_now = c_int16(rcvdBuf[12]).value / 100.0
+                    self._st.pitch_now = c_int16(rcvdBuf[13]).value / 100.0
+                    self._st.yaw_temp = c_int16(rcvdBuf[14]).value / 10.0
+                    self._st.pitch_temp = c_int16(rcvdBuf[15]).value / 10.0
+                    self._st.yaw_raw = c_int16(rcvdBuf[16]).value
+                    self._st.pitch_raw = c_int16(rcvdBuf[17]).value
                     self._st.loop_ec = rcvdBuf[18]
                     self._st.loop_time = rcvdBuf[19]
             sleep(0.01)
