@@ -46,10 +46,9 @@ class PanTiltDriver:
         self._read_flag = True
         self._lock = Lock()
         self._st = PanTiltStatus()
-        sleep(0.5)
+        sleep(0.1)
         if start_identity:
-            self.set_pose(0.0, 0.0, 10)
-            sleep(1)
+            self.set_pose(0.0, 0.0, 10, True)
         self.end_identity = end_identity
 
     def start(self):

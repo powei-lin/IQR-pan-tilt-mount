@@ -12,7 +12,7 @@ class ModbusRTUMaster:
         self._com = Serial(port=port_name, baudrate=baud_rate, timeout=0.5)
         if self._com.is_open:
             print(f"Open serial port: {port_name} successful")
-        sleep(0.5)
+        sleep(0.1)
 
     def __del__(self):
         print("closing")
